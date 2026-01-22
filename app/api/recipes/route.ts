@@ -110,7 +110,7 @@ export async function POST(req: NextRequest) {
           .map((obj: any) => normalizeIngredient(obj.name));
 
         // Combine and deduplicate
-        ingredients = [...new Set([...labelIngredients, ...objectIngredients])];
+        ingredients = Array.from(new Set([...labelIngredients, ...objectIngredients]));
       } catch (visionError) {
         console.error('Vision API error:', visionError);
         // Fall back to demo mode

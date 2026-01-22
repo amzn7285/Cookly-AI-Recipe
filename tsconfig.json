@@ -1,3 +1,8 @@
+"compilerOptions": {
+  "target": "ES2020",
+  "downlevelIteration": true,
+  // Leave all your existing settings like lib, allowJs, etc. below this line
+}
 {
   "compilerOptions": {
     "lib": ["dom", "dom.iterable", "esnext"],

@@ -109,8 +109,15 @@ export async function POST(req: NextRequest) {
           .filter((obj: any) => obj.score > 0.6 && isFood(obj.name))
           .map((obj: any) => normalizeIngredient(obj.name));
 
-        // Combine and deduplicate
-        ingredients = Array.from(new Set([...labelIngredients, ...objectIngredients]));
+        // Combine and deduplicate in a TS-safe way
+        const combined: string[] = [...labelIngredients, ...objectIngredients];
+        const seen = new Set<string>();
+        ingredients = combined.filter((item) => {
+        const lower = String(item).toLowerCase().trim();
+  if (seen.has(lower)) return false;
+  seen.add(lower);
+  return true;
+});
       } catch (visionError) {
         console.error('Vision API error:', visionError);
         // Fall back to demo mode

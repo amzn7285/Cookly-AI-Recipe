@@ -112,7 +112,7 @@ export async function POST(req: NextRequest) {
         // Combine and deduplicate in a TS-safe way
         const combined: string[] = [...labelIngredients, ...objectIngredients];
         const seen = new Set<string>();
-        ingredients = combined.filter((item) => {
+        ingredients = Array.from(new Set([...labelIngredients, ...objectIngredients]));
         const lower = String(item).toLowerCase().trim();
   if (seen.has(lower)) return false;
   seen.add(lower);

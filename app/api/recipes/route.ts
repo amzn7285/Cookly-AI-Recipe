@@ -109,15 +109,11 @@ export async function POST(req: NextRequest) {
           .filter((obj: any) => obj.score > 0.6 && isFood(obj.name))
           .map((obj: any) => normalizeIngredient(obj.name));
 
-        // Combine and deduplicate in a TS-safe way
-        const combined: string[] = [...labelIngredients, ...objectIngredients];
-        const seen = new Set<string>();
-        ingredients = Array.from(new Set([...labelIngredients, ...objectIngredients]));
-        const lower = String(item).toLowerCase().trim();
-  if (seen.has(lower)) return false;
-  seen.add(lower);
-  return true;
-});
+        // Combine and deduplicate ingredients (100% TypeScript safe)
+const allIngredients = [...labelIngredients, ...objectIngredients];
+// Remove duplicates and clean up values
+const uniqueIngredients = [...new Map(allIngredients.map(ing => [ing.toLowerCase().trim(), ing])).values()];
+ingredients = uniqueIngredients;
       } catch (visionError) {
         console.error('Vision API error:', visionError);
         // Fall back to demo mode

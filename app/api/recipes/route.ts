@@ -109,12 +109,13 @@ export async function POST(req: NextRequest) {
           .filter((obj: any) => obj.score > 0.6 && isFood(obj.name))
           .map((obj: any) => normalizeIngredient(obj.name));
 
-       // Combine and deduplicate ingredients (100% TypeScript-safe method)
-          const uniqueIngredients: string[] = [];
-          for (const ing of [...labelIngredients, ...objectIngredients]) {
-          const normalized = ing.toLowerCase().trim();
-          if (!uniqueIngredients.includes(normalized)) {
-    uniqueIngredients.push(normalized);
+              // Combine and deduplicate ingredients safely
+        const allIngredients = [...labelIngredients, ...objectIngredients];
+        const uniqueIngredients = [...new Map(
+          allIngredients.map(ing => [ing.toLowerCase().trim(), ing])
+        ).values()];
+
+        ingredients = uniqueIngredients;
   }
 }
 ingredients = uniqueIngredients;

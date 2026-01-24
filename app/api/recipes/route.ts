@@ -42,10 +42,9 @@ export async function POST(req: NextRequest) {
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Unauthorized - No token provided' }, { status: 401 });
     }
-
     const token = authHeader.split(' ')[1];
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    
+
     if (authError || !user) {
       console.error('Auth error:', authError);
       return NextResponse.json({ error: 'Unauthorized - Invalid token' }, { status: 401 });
@@ -54,7 +53,7 @@ export async function POST(req: NextRequest) {
     // Get the image from form data
     const formData = await req.formData();
     const image = formData.get('image') as Blob;
-    
+
     if (!image) {
       return NextResponse.json({ error: 'No image provided' }, { status: 400 });
     }
@@ -96,7 +95,7 @@ export async function POST(req: NextRequest) {
 
         const visionData = await visionRes.json();
 
-        // Extract food-related labels
+        // Extract food-related labels and objects
         const labels = visionData.responses?.[0]?.labelAnnotations || [];
         const objects = visionData.responses?.[0]?.localizedObjectAnnotations || [];
 
@@ -109,22 +108,16 @@ export async function POST(req: NextRequest) {
           .filter((obj: any) => obj.score > 0.6 && isFood(obj.name))
           .map((obj: any) => normalizeIngredient(obj.name));
 
-              // Combine and deduplicate ingredients safely
+        // Combine and deduplicate ingredients safely (only once)
         const allIngredients = [...labelIngredients, ...objectIngredients];
         const uniqueIngredients = [...new Map(
           allIngredients.map(ing => [ing.toLowerCase().trim(), ing])
         ).values()];
 
         ingredients = uniqueIngredients;
-  }
-}
-ingredients = uniqueIngredients;
-          // Remove duplicates and clean up values
-          const uniqueIngredients = [...new Map(allIngredients.map(ing => [ing.toLowerCase().trim(), ing])).values()];
-          ingredients = uniqueIngredients;
       } catch (visionError) {
         console.error('Vision API error:', visionError);
-        // Fall back to demo mode
+        // Fall back to demo mode if needed (handled below)
       }
     }
 
@@ -154,15 +147,15 @@ ingredients = uniqueIngredients;
       console.error('Database error (non-fatal):', dbError);
     }
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       ingredients,
       message: ingredients.length > 0 ? 'Ingredients detected successfully' : 'No ingredients detected'
     });
   } catch (err: any) {
     console.error('Vision route error:', err);
-    return NextResponse.json({ 
+    return NextResponse.json({
       error: 'Processing failed',
-      details: err.message 
+      details: err.message
     }, { status: 500 });
   }
 }

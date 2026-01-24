@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
     }
     const token = authHeader.split(' ')[1];
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-
+    
     if (authError || !user) {
       console.error('Auth error:', authError);
       return NextResponse.json({ error: 'Unauthorized - Invalid token' }, { status: 401 });
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
     // Get the image from form data
     const formData = await req.formData();
     const image = formData.get('image') as Blob;
-
+    
     if (!image) {
       return NextResponse.json({ error: 'No image provided' }, { status: 400 });
     }
@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
           .filter((obj: any) => obj.score > 0.6 && isFood(obj.name))
           .map((obj: any) => normalizeIngredient(obj.name));
 
-        // Combine and deduplicate ingredients safely (only once)
+        // Combine and deduplicate ingredients safely
         const allIngredients = [...labelIngredients, ...objectIngredients];
         const uniqueIngredients = [...new Map(
           allIngredients.map(ing => [ing.toLowerCase().trim(), ing])
@@ -117,7 +117,7 @@ export async function POST(req: NextRequest) {
         ingredients = uniqueIngredients;
       } catch (visionError) {
         console.error('Vision API error:', visionError);
-        // Fall back to demo mode if needed (handled below)
+        // Fall back to demo mode if needed
       }
     }
 
